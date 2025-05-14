@@ -1,0 +1,34 @@
+#include <xc.h>
+
+void initTimer1(void);
+void toggleLED(void);
+
+volatile unsigned int count = 0; // Timer overflow counter
+
+void main(void) {
+    TRISBbits.TRISB0 = 0; // Set RB0 (red LED) as output
+    initTimer1(); // Initialize Timer 1
+    
+    while(1) {
+        // Do nothing, wait for interrupt
+    }
+}
+
+void initTimer1(void) {
+    T1CONbits.TCKPS = 0b10; // Set prescaler to 8
+    T1CONbits.TCS = 0; // Select internal clock (Fosc)
+    TMR1 = 61661; // Load TMR1 with calculated initial value
+    IFS0bits.T1IF = 0; // Clear the Timer 1 interrupt flag
+    IEC0bits.T1IE = 1; // Enable Timer 1 interrupt
+    T1CONbits.TON = 1; // Start Timer 1
+}
+
+void __attribute__((__interrupt__, auto_psv)) _T1Interrupt(void) {
+    IFS0bits.T1IF = 0; // Clear Timer 1 interrupt flag
+    toggleLED(); // Toggle the LED
+    TMR1 = 61661; // Reload TMR1 with initial value
+}
+
+void toggleLED(void) {
+    LATBbits.LATB0 ^= 1; // Toggle the red LED
+}
