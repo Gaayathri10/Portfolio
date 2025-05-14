@@ -1,0 +1,54 @@
+#include <xc.h>
+
+int main(void) {
+    
+    
+    RPOR5bits.RP10R = 3;//RP10 is Tx
+    RPINR18bits.U1RXR = 12;//RP12 is RX
+    
+    TRISB = 0xfbff;
+    ANSB = 0xebff;
+    
+   // UART setup
+    U1MODE = 0x8000; // UART enabled
+    U1STA = 0x8400;  // Enable TX, RX  
+    U1BRG = 12;      // Baud rate for 9600 (adjust for your clock)
+
+    // LED setup: Set RB0, RB1, and RB2 as output
+    TRISCbits.TRISC5 = 0; // Red LED
+    TRISCbits.TRISC6 = 0; // Green LED
+    TRISCbits.TRISC7 = 0; // Blue LED
+
+    while (1) {
+        // Wait for a character to be received
+        while (U1STAbits.URXDA == 0){
+
+        }
+        unsigned char receivedChar = U1RXREG;
+
+        // Control LEDs based on the received character
+        if (receivedChar == 114) {
+            LATCbits.LATC5 = 1; // Red LED on
+            LATCbits.LATC6 = 0; // Green LED off
+            LATCbits.LATC7 = 0; // Blue LED off
+        } else if (receivedChar == 103) {
+            LATCbits.LATC5 = 0;
+            LATCbits.LATC6 = 1; // Green LED on
+            LATCbits.LATC7 = 0;
+        } else if (receivedChar == 98) {
+            LATCbits.LATC5 = 0;
+            LATCbits.LATC6 = 0;
+            LATCbits.LATC7 = 1; // Blue LED on
+        } else if (receivedChar == 110) {
+            LATCbits.LATC5 = 0; // Turn off all LEDs
+            LATCbits.LATC6 = 0;
+            LATCbits.LATC7 = 0;
+        }
+    }
+    
+    
+    return 0;
+}
+
+
+
