@@ -1,0 +1,53 @@
+/*
+ * File:   part2.c
+ * Author: gaaya
+ *
+ * Created on November 20, 2024, 8:16 PM
+ */
+
+#include "xc.h"
+
+int main(void) {
+    
+    unsigned char compvalue = 0;
+    CM1CONbits.CON = 0b1;
+    CM1CONbits.CON = 1; //enable the comparator 
+    TRISCbits.TRISC5 = 0;  //Configure RC5 as output pin RED
+    TRISCbits.TRISC6 = 0;  //configure RC6 as output pin GREEN
+    
+    // configurations for the DAC
+    CVRCONbits.CVREN = 1;  // Enable the DAC
+    CVRCONbits.CVRSS = 0;  // Select Vdd as the reference source for the DAC
+    CVRCONbits.CVROE = 1;  // Enable the DAC output
+    CVRCONbits.CVR = 16;   // Set the DAC output voltage level (around 1.65V)    
+    
+    //vdd = (CVR / 2^6 - 1)x Vref = (16/63) x 3.3 = 1.65 approx 
+
+     
+    CM1CONbits.CREF = 1; //
+    CM1CONbits.CCH = 0b00;
+    CVRCONbits.CVREFM =  0;
+    CM1CONbits.CPOL = 1;//
+    CM1CONbits.COE = 1;//
+    
+    CVRCONbits.CVREFP = 0; //connects v+ to dac output
+    
+    while(1){
+        
+        compvalue = CM1CONbits.COUT; // Read the comparator output
+        
+        if (compvalue == 0){
+            
+            LATCbits.LATC5 = 0; //turn off green light 
+            LATCbits.LATC6 = 1; //turn on red light
+        } else {
+                
+            LATCbits.LATC6 =0; //turn off red light  
+            LATCbits.LATC5=1; //turn off green light
+                
+        }
+                
+  
+    }
+    return 0;
+}
