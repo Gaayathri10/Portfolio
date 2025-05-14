@@ -1,0 +1,59 @@
+/*
+ * File:   part2.c
+ * Author: gaaya
+ *
+ * Created on November 20, 2024, 8:16 PM
+ */
+
+#include "xc.h"
+
+int main(void) {
+    // Set the oscillator to 8MHz (no clock division)
+    CLKDIVbits.RCDIV = 0b000; 
+    
+    // Set BLUE LED as output 
+    TRISCbits.TRISC7 = 0; 
+
+    // Set the timer clock to instruction clock 
+    // Instruction clock = Fosc / 4 = 8MHz / 4 = 2MHz
+    // Timer increments at 1/2MHz = 0.5 microseconds
+    // Time = PR1 x timer increment time = 40,000 X 0.5 = 20ms
+    T1CONbits.TCS = 0; 
+    
+    PR1 = 40000;    // 20ms time period
+    
+    // Configure the timer
+    T1CONbits.TON = 1;
+
+    // Flags for switch presses
+    int switch1Pressed = 0;
+    int switch2Pressed = 0;
+    unsigned int pressTime = 0;
+
+    while (1) {
+        // Check if S1 is pressed (assuming S1 is connected to RC9)
+        if (PORTCbits.RC9 == 0 && switch1Pressed == 0) {
+            pressTime = TMR1; // Record the time when S1 was pressed
+            switch1Pressed = 1;  // Mark S1 as pressed
+        }
+
+        // Check if S2 is pressed (assuming S2 is connected to RC8)
+        if (PORTCbits.RC8 == 0 && switch2Pressed == 0) {
+            if (switch1Pressed == 1 && (TMR1 - pressTime) <= 6000) { 
+                // If S2 is pressed within 3 seconds of S1, turn on LED
+                LATCbits.LATC7 = 1;  // Turn on the LED
+            } else {
+                pressTime = TMR1;  // Record the time when S2 was pressed
+                switch2Pressed = 1;  // Mark S2 as pressed
+            }
+        }
+
+        // Reset both switches if 3 seconds have passed
+        if (switch1Pressed && switch2Pressed && (TMR1 - pressTime) > 6000) {
+            switch1Pressed = 0;
+            switch2Pressed = 0;
+        }
+    }
+
+    return 0;
+}
