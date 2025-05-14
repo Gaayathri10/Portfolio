@@ -1,0 +1,37 @@
+#include <xc.h>
+
+int main(void) {
+    
+    RPOR5bits.RP10R = 3;//RP10 is Tx
+    RPINR18bits.U1RXR = 12;//RP12 is RX
+    
+    TRISB = 0xfbff;
+    ANSB = 0xebff;
+    
+   // UART setup
+    U1MODE = 0x8000; // UART enabled
+    U1STA = 0x8400;  // Enable TX, RX  
+    U1BRG = 12;      // Baud rate for 9600 (adjust for your clock) 
+   
+    while (1) {
+        // Wait for switch S1 or S2 to be pressed
+        while(PORTCbits.RC9 & PORTCbits.RC8){
+            
+        }
+        if (PORTCbits.RC9 == 0) {  // If S1 is pressed (active low)
+            U1TXREG = 49;      // Send '1' via UART
+            while (U1STAbits.TRMT == 0){ // Wait for transmission to complete
+            }  
+        } 
+        else if (PORTCbits.RC8 == 0) {  // If S2 is pressed (active low)
+            U1TXREG = 50;      // Send '2' via UART
+            while (U1STAbits.TRMT == 0){ // Wait for transmission to complete
+            }  
+        }
+    }
+
+    return 0;
+}
+
+
+
